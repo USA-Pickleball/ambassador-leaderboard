@@ -1,0 +1,25 @@
+name: Sync Dashboard from SharePoint
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # runs every hour
+  workflow_dispatch:      # allows manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Download dashboard from SharePoint
+        run: |
+          curl -L -o index.html "${{ secrets.SHAREPOINT_FILE_URL }}"
+
+      - name: Commit and push if changed
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          git add index.html
+          git diff --staged --quiet || git commit -m "Auto-sync dashboard"
+          git push
